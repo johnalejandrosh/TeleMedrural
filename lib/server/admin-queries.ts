@@ -36,6 +36,8 @@ export async function listUsers(filters: UserFilters) {
       OR: [
         { name: { contains: filters.q, mode: "insensitive" } },
         { email: { contains: filters.q, mode: "insensitive" } },
+        { municipality: { contains: filters.q, mode: "insensitive" } },
+        { professionalId: { contains: filters.q, mode: "insensitive" } },
       ],
     }),
     ...(filters.roleId && { roleId: filters.roleId }),
@@ -53,9 +55,14 @@ export async function listUsers(filters: UserFilters) {
         id: true,
         name: true,
         email: true,
+        phone: true,
+        municipality: true,
         active: true,
+        professionalId: true,
+        dataConsentAt: true,
         lastLoginAt: true,
         createdAt: true,
+        _count: { select: { casesCaptured: true, notes: true } },
         role: { select: { id: true, name: true, isSystem: true } },
       },
     }),
@@ -64,8 +71,11 @@ export async function listUsers(filters: UserFilters) {
   return {
     total,
     pageCount: Math.max(1, Math.ceil(total / USERS_PAGE_SIZE)),
-    users: rows.map((user) => ({
+    users: rows.map(({ _count, ...user }) => ({
       ...user,
+      caseCount: _count.casesCaptured,
+      noteCount: _count.notes,
+      dataConsentAt: user.dataConsentAt?.toISOString() ?? null,
       lastLoginAt: user.lastLoginAt?.toISOString() ?? null,
       createdAt: user.createdAt.toISOString(),
     })),

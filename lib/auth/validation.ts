@@ -1,3 +1,5 @@
+import { DOCTOR_ROLE_NAME, SELF_SIGNUP_ROLES } from "./permissions";
+
 export type FieldErrors<K extends string> = Partial<Record<K, string>>;
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -5,34 +7,47 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const MIN_PASSWORD_LENGTH = 8;
 
 function validateEmail(email: string): string | undefined {
-  if (!email) return "Ingresa tu correo.";
-  if (!EMAIL_PATTERN.test(email)) return "Ingresa un correo válido.";
+  if (!email) return "Escriba su correo.";
+  if (!EMAIL_PATTERN.test(email)) return "Escriba un correo válido.";
 }
 
 export function validateLogin(input: { email: string; password: string }) {
   const errors: FieldErrors<"email" | "password"> = {};
   const email = validateEmail(input.email);
   if (email) errors.email = email;
-  if (!input.password) errors.password = "Ingresa tu contraseña.";
+  if (!input.password) errors.password = "Escriba su contraseña.";
   return errors;
 }
+
+const PHONE_PATTERN = /^[+\d][\d\s-]{6,19}$/;
 
 export function validateRegister(input: {
   name: string;
   email: string;
+  phone: string;
+  municipality: string;
+  profile: string;
+  professionalId: string;
   password: string;
   confirmPassword: string;
   terms: boolean;
 }) {
-  const errors: FieldErrors<"name" | "email" | "password" | "confirmPassword" | "terms"> = {};
-  if (input.name.trim().length < 2) errors.name = "Ingresa tu nombre (mínimo 2 caracteres).";
+  const errors: FieldErrors<"name" | "email" | "phone" | "municipality" | "profile" | "professionalId" | "password" | "confirmPassword" | "terms"> = {};
+  if (input.name.trim().length < 2) errors.name = "Escriba su nombre (mínimo 2 caracteres).";
   const email = validateEmail(input.email);
   if (email) errors.email = email;
+  if (!input.phone.trim()) errors.phone = "Escriba un teléfono de contacto.";
+  else if (!PHONE_PATTERN.test(input.phone.trim())) errors.phone = "Escriba un teléfono válido (solo números).";
+  if (!input.municipality.trim()) errors.municipality = "Indique su municipio o sede.";
+  if (!(SELF_SIGNUP_ROLES as readonly string[]).includes(input.profile)) errors.profile = "Elija su perfil.";
+  if (input.profile === DOCTOR_ROLE_NAME && !/^[A-Za-z0-9-]{4,40}$/.test(input.professionalId.trim())) {
+    errors.professionalId = "Escriba su número de registro profesional (ReTHUS).";
+  }
   if (input.password.length < MIN_PASSWORD_LENGTH) {
     errors.password = `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`;
   }
   if (input.confirmPassword !== input.password) errors.confirmPassword = "Las contraseñas no coinciden.";
-  if (!input.terms) errors.terms = "Debes aceptar los términos para continuar.";
+  if (!input.terms) errors.terms = "Debe aceptar la política de tratamiento de datos (Ley 1581 de 2012).";
   return errors;
 }
 

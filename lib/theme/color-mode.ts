@@ -5,7 +5,7 @@ import { COLOR_MODE_STORAGE_KEY } from "./init-script";
 
 export type ColorMode = "light" | "dark" | "auto";
 
-const CHANGE_EVENT = "centralapp:color-mode";
+const CHANGE_EVENT = "telemed:color-mode";
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 function readStoredMode(): ColorMode {
@@ -76,8 +76,8 @@ export function useThemeSignature(): string {
     subscribeResolved,
     () => {
       const root = document.documentElement;
-      return `${root.getAttribute("data-coreui-theme") ?? "light"}:${root.getAttribute("data-app-theme") ?? "sol"}`;
+      return `${root.getAttribute("data-coreui-theme") ?? "light"}:${root.getAttribute("data-app-theme") ?? "clinica"}`;
     },
-    () => "light:sol",
+    () => "light:clinica",
   );
 }

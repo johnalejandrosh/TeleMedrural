@@ -1,29 +1,31 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Plus_Jakarta_Sans, Sora } from "next/font/google";
+import { Figtree, IBM_Plex_Mono, Lexend } from "next/font/google";
 import "@/styles/theme.scss";
 import { DEFAULT_APP_THEME, themeInitScript } from "@/lib/theme/init-script";
 
-const sans = Plus_Jakarta_Sans({
+const sans = Figtree({
   variable: "--font-sans",
   subsets: ["latin"],
 });
 
-const display = Sora({
+const display = Lexend({
   variable: "--font-display",
   subsets: ["latin"],
 });
 
-const mono = JetBrains_Mono({
+const mono = IBM_Plex_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "CentralApp",
-    template: "%s · CentralApp",
+    default: "TeleMed Rural",
+    template: "%s · TeleMed Rural",
   },
-  description: "Centraliza ventas, clientes y operación en un solo panel.",
+  description:
+    "Panel de telemedicina diferida: casos registrados sin conexión por promotores de salud rurales, pre-triaje NEWS2 y observaciones del personal de salud.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

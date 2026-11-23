@@ -1,5 +1,11 @@
-// Esquema de CentralApp. La conexión se configura en prisma.config.ts
-// (variables DB_* del .env); las tablas viven en el esquema DB_SHEMA.
+// Esquema de TeleMed Rural. La conexión se configura en prisma.config.ts
+// (variables DB_* del .env); las tablas viven en el esquema DB_SHEMA (telemedicina).
+//
+// Módulos:
+//   · Acceso: usuarios, roles, permisos, sesiones web y tokens de la app móvil.
+//   · Atención: pacientes, casos (ficha clínica + signos vitales + pre-triaje NEWS2)
+//     y observaciones médicas (telemedicina diferida).
+//   · Sincronización: bitácora de los lotes enviados por la app al recuperar la señal.
 
 generator client {
   provider = "prisma-client"
@@ -10,19 +16,34 @@ datasource db {
   provider = "postgresql"
 }
 
+// =============================================================== Acceso
+
 model User {
-  id           String        @id @default(cuid())
-  name         String        @db.VarChar(120)
-  email        String        @unique @db.VarChar(254)
-  passwordHash String        @map("password_hash")
-  active       Boolean       @default(true)
-  roleId       String        @map("role_id")
-  role         Role          @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  lastLoginAt  DateTime?     @map("last_login_at")
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
-  sessions     Session[]
-  integrations Integration[]
+  id             String           @id @default(cuid())
+  name           String           @db.VarChar(120)
+  email          String           @unique @db.VarChar(254)
+  phone          String?          @db.VarChar(30)
+  /// Municipio o sede de trabajo (puesto de salud, ESE, hospital).
+  municipality   String?          @db.VarChar(80)
+  /// Registro profesional (ReTHUS / tarjeta profesional) del personal de salud.
+  professionalId String?          @map("professional_id") @db.VarChar(40)
+  passwordHash   String           @map("password_hash")
+  active         Boolean          @default(true)
+  /// Aceptación de la política de tratamiento de datos (Ley 1581 de 2012, Res. 2654 de 2019).
+  dataConsentAt  DateTime?        @map("data_consent_at")
+  roleId         String           @map("role_id")
+  role           Role             @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  lastLoginAt    DateTime?        @map("last_login_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  sessions       Session[]
+  apiTokens      ApiToken[]
+  /// Casos registrados en campo (promotor de salud).
+  casesCaptured  ClinicalCase[]   @relation("CaseCapturedBy")
+  /// Casos que marcó como revisados (profesional de salud).
+  casesReviewed  ClinicalCase[]   @relation("CaseReviewedBy")
+  notes          MedicalNote[]
+  syncBatches    SyncBatch[]
 
   @@index([roleId])
   @@map("users")
@@ -44,7 +65,7 @@ model Role {
 
 model Permission {
   id          String           @id @default(cuid())
-  /// Clave que consulta el código, p. ej. "users.create".
+  /// Clave que consulta el código, p. ej. "cases.review".
   key         String           @unique @db.VarChar(80)
   name        String           @db.VarChar(120)
   description String?          @db.VarChar(255)
@@ -85,47 +106,253 @@ model Session {
   @@map("sessions")
 }
 
-enum IntegrationStatus {
-  /// Guardada pero aún sin probar.
-  PENDING   @map("pending")
-  /// La última prueba o sincronización respondió bien.
-  CONNECTED @map("connected")
-  /// La última prueba o sincronización falló (ver `last_error`).
-  ERROR     @map("error")
+/// Token de acceso de la app móvil (Authorization: Bearer). Igual que las sesiones,
+/// solo se guarda el SHA-256 del token.
+model ApiToken {
+  id         String      @id @db.VarChar(64)
+  userId     String      @map("user_id")
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Nombre del dispositivo que informa la app (p. ej. "Samsung A14 · Promotor Vereda El Salitre").
+  deviceName String      @map("device_name") @db.VarChar(120)
+  expiresAt  DateTime    @map("expires_at")
+  lastUsedAt DateTime?   @map("last_used_at")
+  revokedAt  DateTime?   @map("revoked_at")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  batches    SyncBatch[]
 
-  @@map("integration_status")
+  @@index([userId])
+  @@map("api_tokens")
 }
 
-/// Conexiones con servicios externos (Pancake POS, Shopify…). Cada fila es una cuenta/tienda conectada.
-/// PENDIENTE: cifrar en reposo api_key, api_secret y access_token. Ninguno se envía al navegador.
-model Integration {
-  id             String            @id @default(cuid())
-  /// Proveedor del catálogo (lib/integrations/catalog.ts), p. ej. "pancake" o "shopify".
-  provider       String            @db.VarChar(40)
-  /// Nombre interno para reconocer la conexión, p. ej. "Tienda principal".
-  name           String            @db.VarChar(120)
-  /// Identificador de la cuenta en el proveedor (Pancake: shop_id; Shopify: dominio .myshopify.com).
-  externalId     String?           @map("external_id") @db.VarChar(120)
-  /// Credencial principal (Pancake: api_key; Shopify: Client ID o token shpat_ de una app antigua).
-  apiKey         String?           @map("api_key")
-  /// Credencial secundaria (Shopify: Client secret).
-  apiSecret      String?           @map("api_secret")
-  /// Token de acceso obtenido del proveedor y reutilizado hasta que vence (Shopify: 24 h).
-  accessToken    String?           @map("access_token")
-  tokenExpiresAt DateTime?         @map("token_expires_at")
-  /// Ajustes propios del proveedor (zona horaria, filtros por defecto, etc.).
-  settings       Json?
-  status         IntegrationStatus @default(PENDING)
-  active         Boolean           @default(true)
-  lastSyncAt     DateTime?         @map("last_sync_at")
-  lastError      String?           @map("last_error") @db.VarChar(500)
-  createdById    String?           @map("created_by_id")
-  createdBy      User?             @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt      DateTime          @default(now()) @map("created_at")
-  updatedAt      DateTime          @updatedAt @map("updated_at")
+// =============================================================== Atención
 
-  @@unique([provider, externalId])
-  @@index([provider])
-  @@index([createdById])
-  @@map("integrations")
+enum DocumentType {
+  /// Cédula de ciudadanía
+  CC @map("cc")
+  /// Tarjeta de identidad
+  TI @map("ti")
+  /// Registro civil
+  RC @map("rc")
+  /// Cédula de extranjería
+  CE @map("ce")
+  /// Permiso por protección temporal
+  PPT @map("ppt")
+  PA  @map("pa")
+  /// Sin documento (se identifica por nombre, fecha de nacimiento y vereda)
+  SD  @map("sd")
+
+  @@map("document_type")
+}
+
+enum Sex {
+  F @map("f")
+  M @map("m")
+  /// Intersexual / indeterminado
+  I @map("i")
+
+  @@map("sex")
+}
+
+/// Paciente atendido en campo. Se crea o actualiza con cada caso sincronizado.
+model Patient {
+  id             String         @id @default(cuid())
+  documentType   DocumentType   @map("document_type")
+  /// `null` cuando el paciente no tiene documento (SD).
+  documentNumber String?        @map("document_number") @db.VarChar(30)
+  firstName      String         @map("first_name") @db.VarChar(80)
+  lastName       String         @map("last_name") @db.VarChar(80)
+  birthDate      DateTime       @map("birth_date") @db.Date
+  sex            Sex
+  phone          String?        @db.VarChar(30)
+  /// EPS o régimen (subsidiado, contributivo, no afiliado).
+  insurer        String?        @db.VarChar(80)
+  municipality   String         @db.VarChar(80)
+  vereda         String?        @db.VarChar(120)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  cases          ClinicalCase[]
+
+  @@unique([documentType, documentNumber])
+  @@index([lastName, firstName])
+  @@index([municipality])
+  @@map("patients")
+}
+
+/// Nivel de respuesta clínica según NEWS2 (Royal College of Physicians, 2017).
+enum RiskLevel {
+  /// Puntaje 0–4: baja.
+  LOW        @map("low")
+  /// Puntaje 1–4 con un parámetro en 3: baja-media (revisión urgente).
+  LOW_MEDIUM @map("low_medium")
+  /// Puntaje 5–6: media.
+  MEDIUM     @map("medium")
+  /// Puntaje ≥ 7: alta (emergencia).
+  HIGH       @map("high")
+
+  @@map("risk_level")
+}
+
+/// Escala ACVPU de nivel de conciencia.
+enum Consciousness {
+  /// Alerta
+  A @map("a")
+  /// Confusión nueva
+  C @map("c")
+  /// Responde a la voz
+  V @map("v")
+  /// Responde al dolor
+  P @map("p")
+  /// No responde
+  U @map("u")
+
+  @@map("consciousness")
+}
+
+enum CaseStatus {
+  /// Sincronizado, a la espera de revisión médica.
+  PENDING  @map("pending")
+  /// Un profesional dejó su concepto y lo marcó como revisado.
+  REVIEWED @map("reviewed")
+
+  @@map("case_status")
+}
+
+/// Ficha clínica registrada por un promotor de salud en la app móvil (sin conexión)
+/// y recibida por la plataforma al sincronizar.
+model ClinicalCase {
+  id                String        @id @default(cuid())
+  /// UUID generado en el teléfono: hace idempotente la sincronización (reintentos sin duplicar).
+  clientId          String        @unique @map("client_id") @db.VarChar(64)
+  /// Consecutivo legible para el personal de salud (p. ej. TMR-000123).
+  number            Int           @unique @default(autoincrement())
+  patientId         String        @map("patient_id")
+  patient           Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  capturedById      String        @map("captured_by_id")
+  capturedBy        User          @relation("CaseCapturedBy", fields: [capturedById], references: [id], onDelete: Restrict)
+  syncBatchId       String?       @map("sync_batch_id")
+  syncBatch         SyncBatch?    @relation(fields: [syncBatchId], references: [id], onDelete: SetNull)
+  /// Hora de la atención en campo (reloj del teléfono).
+  capturedAt        DateTime      @map("captured_at")
+  /// Hora en que llegó a la plataforma.
+  syncedAt          DateTime      @default(now()) @map("synced_at")
+  municipality      String        @db.VarChar(80)
+  vereda            String?       @db.VarChar(120)
+  latitude          Float?
+  longitude         Float?
+
+  // --- Motivo y síntomas -------------------------------------------------------
+  chiefComplaint    String        @map("chief_complaint") @db.VarChar(500)
+  /// Síntomas marcados en la app (catálogo de lib/med/catalog.ts).
+  symptoms          String[]
+  symptomsNotes     String?       @map("symptoms_notes") @db.VarChar(2000)
+  /// Días desde el inicio de los síntomas.
+  onsetDays         Int?          @map("onset_days")
+
+  // --- Antecedentes ------------------------------------------------------------
+  /// Enfermedades crónicas o antecedentes personales marcados (catálogo).
+  conditions        String[]
+  allergies         String?       @db.VarChar(500)
+  medications       String?       @db.VarChar(1000)
+  /// Gestante (solo aplica a mujeres en edad fértil).
+  pregnant          Boolean?
+  backgroundNotes   String?       @map("background_notes") @db.VarChar(2000)
+
+  // --- Signos vitales (pre-triaje NEWS2) ---------------------------------------
+  respiratoryRate   Int?          @map("respiratory_rate")
+  spo2              Int?
+  /// Escala 2 de SpO₂ (insuficiencia respiratoria hipercápnica, p. ej. EPOC).
+  spo2Scale2        Boolean       @default(false) @map("spo2_scale2")
+  supplementalO2    Boolean       @default(false) @map("supplemental_o2")
+  systolicBp        Int?          @map("systolic_bp")
+  diastolicBp       Int?          @map("diastolic_bp")
+  heartRate         Int?          @map("heart_rate")
+  consciousness     Consciousness?
+  /// °C
+  temperature       Float?
+  /// mg/dL (glucometría capilar, opcional)
+  glucose           Int?
+  /// kg (opcional)
+  weightKg          Float?        @map("weight_kg")
+
+  // --- Pre-triaje ----------------------------------------------------------------
+  /// Puntaje calculado por la plataforma con las mismas reglas de la app.
+  news2Score        Int?          @map("news2_score")
+  /// Puntaje que informó la app (para detectar diferencias de versión).
+  news2DeviceScore  Int?          @map("news2_device_score")
+  riskLevel         RiskLevel?    @map("risk_level")
+  /// Puntaje por parámetro: { respiratoryRate: 2, spo2: 0, … }.
+  news2Breakdown    Json?         @map("news2_breakdown")
+  /// Faltan signos vitales: el puntaje es parcial.
+  news2Incomplete   Boolean       @default(false) @map("news2_incomplete")
+
+  status            CaseStatus    @default(PENDING)
+  reviewedAt        DateTime?     @map("reviewed_at")
+  reviewedById      String?       @map("reviewed_by_id")
+  reviewedBy        User?         @relation("CaseReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  notes             MedicalNote[]
+
+  @@index([status, riskLevel])
+  @@index([patientId, capturedAt])
+  @@index([capturedById, capturedAt])
+  @@index([syncedAt])
+  @@index([municipality])
+  @@map("clinical_cases")
+}
+
+/// Conducta que recomienda el profesional al revisar el caso.
+enum CarePlan {
+  /// Manejo en casa con indicaciones y seguimiento del promotor.
+  HOME_CARE   @map("home_care")
+  /// Control o cita prioritaria en el puesto de salud.
+  APPOINTMENT @map("appointment")
+  /// Remisión a un nivel de mayor complejidad.
+  REFERRAL    @map("referral")
+  /// Traslado urgente (ambulancia / red de urgencias).
+  EMERGENCY   @map("emergency")
+
+  @@map("care_plan")
+}
+
+/// Observación del profesional de salud sobre un caso (telemedicina no interactiva).
+model MedicalNote {
+  id        String       @id @default(cuid())
+  caseId    String       @map("case_id")
+  case      ClinicalCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  authorId  String       @map("author_id")
+  author    User         @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  body      String       @db.VarChar(5000)
+  carePlan  CarePlan?    @map("care_plan")
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  @@index([caseId, createdAt])
+  @@index([authorId])
+  @@map("medical_notes")
+}
+
+// =============================================================== Sincronización
+
+/// Lote recibido desde la app móvil en POST /api/v1/casos.
+model SyncBatch {
+  id         String         @id @default(cuid())
+  userId     String         @map("user_id")
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenId    String?        @map("token_id") @db.VarChar(64)
+  token      ApiToken?      @relation(fields: [tokenId], references: [id], onDelete: SetNull)
+  /// Versión de la app que envió el lote.
+  appVersion String?        @map("app_version") @db.VarChar(40)
+  received   Int            @default(0)
+  created    Int            @default(0)
+  /// Casos que ya existían (reintento del teléfono): no se duplican.
+  duplicated Int            @default(0)
+  rejected   Int            @default(0)
+  /// Detalle de los casos rechazados: [{ clientId, error }].
+  errors     Json?
+  receivedAt DateTime       @default(now()) @map("received_at")
+  cases      ClinicalCase[]
+
+  @@index([receivedAt])
+  @@index([userId, receivedAt])
+  @@map("sync_batches")
 }

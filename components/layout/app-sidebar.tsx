@@ -30,7 +30,11 @@ type AppSidebarProps = {
   onToggleUnfoldable: () => void;
 };
 
-function SidebarLink({ item, pathname }: { item: NavLinkEntry; pathname: string }) {
+function isActive(item: NavLinkEntry, pathname: string) {
+  return item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
+}
+
+function SidebarLink({ item, pathname, count }: { item: NavLinkEntry; pathname: string; count?: number }) {
   const content = (
     <>
       {item.icon ? (
@@ -47,6 +51,11 @@ function SidebarLink({ item, pathname }: { item: NavLinkEntry; pathname: string 
           {item.badge.text}
         </CBadge>
       )}
+      {count ? (
+        <CBadge color="danger" shape="rounded-pill" className="ms-auto" aria-label={`${count} pendientes`}>
+          {count}
+        </CBadge>
+      ) : null}
     </>
   );
 
@@ -55,7 +64,7 @@ function SidebarLink({ item, pathname }: { item: NavLinkEntry; pathname: string 
       {item.disabled ? (
         <CNavLink disabled>{content}</CNavLink>
       ) : (
-        <CNavLink as={Link} href={item.href} active={pathname === item.href}>
+        <CNavLink as={Link} href={item.href} active={isActive(item, pathname)}>
           {content}
         </CNavLink>
       )}
@@ -65,9 +74,11 @@ function SidebarLink({ item, pathname }: { item: NavLinkEntry; pathname: string 
 
 export function AppSidebar({ visible, unfoldable, onVisibleChange, onToggleUnfoldable }: AppSidebarProps) {
   const pathname = usePathname();
-  const { can } = useSession();
+  const { can, user } = useSession();
+  const counters = { pending: user.pendingCases };
   // Solo oculta lo que no corresponde: cada página vuelve a verificar el permiso en el servidor.
-  const allowed = (item: NavLinkEntry) => !item.permission || can(item.permission);
+  const allowed = (item: NavLinkEntry) =>
+    (!item.permission || can(item.permission)) && (!item.anyPermission || item.anyPermission.some((permission) => can(permission)));
 
   // Filtra por permiso y quita los títulos de sección que quedan vacíos.
   const entries = navigation
@@ -86,7 +97,7 @@ export function AppSidebar({ visible, unfoldable, onVisibleChange, onToggleUnfol
       onVisibleChange={onVisibleChange}
     >
       <CSidebarHeader>
-        <CSidebarBrand as={Link} href="/dashboard" aria-label="CentralApp, ir al resumen">
+        <CSidebarBrand as={Link} href="/dashboard" aria-label="TeleMed Rural, ir al inicio">
           <Logo size={32} wordmarkClassName="d-sidebar-narrow-none" />
         </CSidebarBrand>
         {/* Patrón de la doc: iconos que cambian según el estado narrow-unfoldable. */}
@@ -114,7 +125,7 @@ export function AppSidebar({ visible, unfoldable, onVisibleChange, onToggleUnfol
             return (
               <CNavGroup
                 key={item.label}
-                visible={item.items.some((child) => pathname.startsWith(child.href))}
+                visible={item.items.some((child) => isActive(child, pathname))}
                 toggler={
                   <>
                     <CIcon icon={item.icon} customClassName="nav-icon" />
@@ -129,7 +140,7 @@ export function AppSidebar({ visible, unfoldable, onVisibleChange, onToggleUnfol
             );
           }
 
-          return <SidebarLink key={item.href} item={item} pathname={pathname} />;
+          return <SidebarLink key={item.href} item={item} pathname={pathname} count={item.counter ? counters[item.counter] : undefined} />;
         })}
       </CSidebarNav>
 

@@ -1,4 +1,4 @@
-import { cilChartPie, cilLockLocked, cilPuzzle, cilSettings, cilSpeedometer } from "@coreui/icons";
+import { cilBook, cilFolderOpen, cilHome, cilLockLocked, cilPeople, cilSettings, cilSync, cilWarning } from "@coreui/icons";
 import { PERMISSIONS, type PermissionKey } from "@/lib/auth/permissions";
 
 type Badge = { text: string; color: string };
@@ -10,10 +10,16 @@ export type NavLinkEntry = {
   /** Opcional en los ítems de un submenú (se muestra una viñeta). */
   icon?: string[];
   badge?: Badge;
+  /** Contador dinámico que se muestra como insignia (casos pendientes de revisión). */
+  counter?: "pending";
   /** Para secciones aún no implementadas. */
   disabled?: boolean;
   /** Si se indica, el ítem solo se muestra a quien tenga este permiso. */
   permission?: PermissionKey;
+  /** Basta con tener cualquiera de estos permisos. */
+  anyPermission?: PermissionKey[];
+  /** Marca activo solo con la ruta exacta (no sus subrutas). */
+  exact?: boolean;
 };
 
 export type NavEntry =
@@ -26,21 +32,22 @@ export type NavEntry =
       items: NavLinkEntry[];
     };
 
-const soon: Badge = { text: "Pronto", color: "secondary" };
-
 export const navigation: NavEntry[] = [
-  { kind: "title", label: "General" },
-  { kind: "link", label: "Resumen", href: "/dashboard", icon: cilSpeedometer },
+  { kind: "title", label: "Atención" },
+  { kind: "link", label: "Inicio", href: "/dashboard", icon: cilHome, permission: PERMISSIONS.DASHBOARD_VIEW, exact: true },
   {
-    kind: "group",
-    label: "Tableros",
-    icon: cilChartPie,
-    items: [
-      { kind: "link", label: "Tablero 1", href: "/dashboard/tableros/tablero-1", permission: PERMISSIONS.TABLERO1_VIEW },
-      { kind: "link", label: "Tablero 2", href: "/dashboard/tableros/tablero-2", permission: PERMISSIONS.TABLERO2_VIEW },
-    ],
+    kind: "link",
+    label: "Bandeja de casos",
+    href: "/dashboard/casos",
+    icon: cilFolderOpen,
+    anyPermission: [PERMISSIONS.CASES_READ, PERMISSIONS.CASES_READ_OWN],
+    counter: "pending",
   },
+  { kind: "link", label: "Pacientes", href: "/dashboard/pacientes", icon: cilPeople, permission: PERMISSIONS.PATIENTS_READ },
+  { kind: "link", label: "Escala NEWS2", href: "/dashboard/news2", icon: cilWarning, permission: PERMISSIONS.DASHBOARD_VIEW },
   { kind: "title", label: "Administración" },
+  { kind: "link", label: "Sincronización", href: "/dashboard/sincronizacion", icon: cilSync, permission: PERMISSIONS.SYNC_READ },
+  { kind: "link", label: "API de la app móvil", href: "/dashboard/api", icon: cilBook, anyPermission: [PERMISSIONS.SYNC_READ, PERMISSIONS.CASES_SYNC] },
   {
     kind: "group",
     label: "Usuarios y acceso",
@@ -51,24 +58,14 @@ export const navigation: NavEntry[] = [
       { kind: "link", label: "Permisos", href: "/dashboard/permisos", permission: PERMISSIONS.PERMISSIONS_READ },
     ],
   },
-  {
-    kind: "group",
-    label: "Integraciones",
-    icon: cilPuzzle,
-    items: [
-      { kind: "link", label: "Conexiones", href: "/dashboard/integraciones", permission: PERMISSIONS.INTEGRATIONS_READ },
-      { kind: "link", label: "Pancake POS", href: "/dashboard/integraciones/pancake", permission: PERMISSIONS.INTEGRATIONS_READ },
-      { kind: "link", label: "Shopify", href: "/dashboard/integraciones/shopify", permission: PERMISSIONS.INTEGRATIONS_READ },
-    ],
-  },
+  { kind: "title", label: "Cuenta" },
   {
     kind: "group",
     label: "Configuración",
     icon: cilSettings,
     items: [
-      { kind: "link", label: "Temas", href: "/dashboard/configuracion/temas" },
-      { kind: "link", label: "Perfil", href: "/dashboard/configuracion/perfil" },
-      { kind: "link", label: "Notificaciones", href: "/dashboard/configuracion/notificaciones", badge: soon, disabled: true },
+      { kind: "link", label: "Mi perfil", href: "/dashboard/configuracion/perfil" },
+      { kind: "link", label: "Apariencia", href: "/dashboard/configuracion/temas" },
     ],
   },
 ];

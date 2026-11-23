@@ -11,6 +11,10 @@ export type ClientUser = {
   roleName: string;
   isSuperAdmin: boolean;
   permissions: string[];
+  /** Casos pendientes de revisión visibles para el usuario (insignia del menú). */
+  pendingCases: number;
+  /** Pendientes con riesgo alto o medio (punto rojo del encabezado). */
+  urgentCases: number;
 };
 
 type SessionContextValue = {

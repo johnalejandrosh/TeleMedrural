@@ -1,7 +1,6 @@
 /** Esquemas de validación (Zod) de los módulos de administración. Se usan en el servidor. */
 import { z } from "zod";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/validation";
-import { isProviderId } from "@/lib/integrations/catalog";
 
 const name = (label: string, max: number) =>
   z
@@ -24,8 +23,14 @@ export const userSchema = z.object({
     .trim()
     .toLowerCase()
     .pipe(z.email({ error: "Ingresa un correo válido." }).max(254, { error: "Correo demasiado largo." })),
+  phone: optionalText(30),
+  municipality: optionalText(80),
   roleId: z.string().min(1, { error: "Elige un rol." }),
   active: z.boolean(),
+  /** Autorización del titular para el tratamiento de sus datos (Ley 1581 de 2012). */
+  dataConsent: z.boolean(),
+  /** Registro profesional (ReTHUS) del personal de salud. */
+  professionalId: optionalText(40),
   // Vacío al editar = conservar la contraseña actual.
   password: z.union([
     z.literal(""),
@@ -52,19 +57,6 @@ export const permissionSchema = z.object({
   name: name("El nombre", 120),
   module: name("El módulo", 60),
   description: optionalText(255),
-});
-
-export const integrationSchema = z.object({
-  provider: z.string().refine(isProviderId, { error: "Ese proveedor no está disponible." }),
-  // Vacío = usar el nombre de la cuenta que devuelva el proveedor.
-  name: z.union([z.literal(""), name("El nombre", 120)]),
-  // Vacío = buscarlo con la api_key (si el proveedor lo permite). El formato de cada
-  // proveedor se valida aparte (catálogo: normalize + pattern).
-  externalId: z.string().trim().max(120, { error: "Admite hasta 120 caracteres." }),
-  // Vacíos al editar = conservar los guardados.
-  apiKey: z.string().trim().max(500, { error: "Admite hasta 500 caracteres." }),
-  apiSecret: z.string().trim().max(500, { error: "Admite hasta 500 caracteres." }),
-  active: z.boolean(),
 });
 
 /** Convierte los errores de Zod en { campo: primer mensaje }. */

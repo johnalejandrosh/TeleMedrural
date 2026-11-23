@@ -4,7 +4,7 @@
  */
 
 /** Cookie httpOnly con el token de sesión (su hash se guarda en la tabla `sessions`). */
-export const SESSION_COOKIE = "centralapp_session";
+export const SESSION_COOKIE = "telemed_session";
 
 /** Rutas públicas de autenticación: un usuario con sesión es enviado al dashboard. */
 export const AUTH_ROUTES = ["/login", "/register"] as const;

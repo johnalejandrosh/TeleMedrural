@@ -101,7 +101,7 @@ export function UsersManager({ users, total, pageCount, pageSize, filters, roles
               <CIcon icon={cilSearch} />
               <CFormInput
                 type="search"
-                placeholder="Buscar por nombre o correo…"
+                placeholder="Buscar por nombre, correo o municipio…"
                 aria-label="Buscar usuarios"
                 value={query}
                 onChange={(event) => onSearchChange(event.target.value)}
@@ -188,7 +188,12 @@ export function UsersManager({ users, total, pageCount, pageSize, filters, roles
                               {user.name}
                               {isSelf && <CBadge className="ms-2 bg-primary-subtle text-primary-emphasis">Tú</CBadge>}
                             </div>
-                            <div className="small text-body-secondary text-truncate">{user.email}</div>
+                            <div className="small text-body-secondary text-truncate">
+                              {user.email}
+                              {user.municipality && ` · ${user.municipality}`}
+                              {user.caseCount > 0 && ` · ${user.caseCount} ${user.caseCount === 1 ? "caso registrado" : "casos registrados"}`}
+                              {user.noteCount > 0 && ` · ${user.noteCount} ${user.noteCount === 1 ? "observación" : "observaciones"}`}
+                            </div>
                           </div>
                         </div>
                       </CTableDataCell>
@@ -300,7 +305,13 @@ export function UsersManager({ users, total, pageCount, pageSize, filters, roles
       >
         {pendingAction?.kind === "delete" ? (
           <p className="mb-0">
-            Se eliminará la cuenta de <strong>{pendingAction.user.name}</strong> ({pendingAction.user.email}) y se cerrarán sus sesiones. Esta acción no se puede deshacer.
+            Se eliminará la cuenta de <strong>{pendingAction.user.name}</strong> ({pendingAction.user.email}), se cerrarán sus sesiones
+            {" "}y se revocarán sus dispositivos móviles. Esta acción no se puede deshacer.
+            {pendingAction.user.caseCount + pendingAction.user.noteCount > 0 && (
+              <span className="d-block mt-2 text-danger-emphasis">
+                Tiene registros clínicos asociados, por lo que no se podrá eliminar: desactívelo en su lugar.
+              </span>
+            )}
           </p>
         ) : pendingAction?.user.active ? (
           <p className="mb-0">

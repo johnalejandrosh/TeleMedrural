@@ -1,107 +1,100 @@
 // =============================================================================
-// Tema base de CentralApp sobre CoreUI — "Sol": amarillo vivo + tinta.
-// Los temas alternativos (Océano, Esmeralda…) están en _themes.scss.
+// Tema base de TeleMed Rural sobre CoreUI — "Clínica": verde azulado clínico,
+// neutros fríos y menú lateral azul noche. Los temas alternativos están en _themes.scss.
 //
 // Se compila CoreUI desde sus fuentes Sass y se configuran sus variables con
 // `@use ... with (...)`, tal como indica la guía "Sass" de la documentación.
-// Así cambian de verdad todos los componentes (botones, badges, foco, sidebar…),
-// no solo las variables CSS de :root.
 //
-// Regla de legibilidad: el amarillo se usa como FONDO (botones, píldoras activas,
-// realces) con texto en tinta encima; nunca como color de texto sobre blanco.
-// Para texto se usan los tonos "emphasis" y el color de enlace (ámbar oscuro).
+// Los niveles de riesgo NEWS2 usan tokens propios (--tri-*, _app-tokens.scss), fijos
+// en todos los temas: rojo (alto), naranja (medio), ámbar (bajo-medio) y verde (bajo).
 // =============================================================================
 
 @use "@coreui/coreui/scss/coreui" with (
-  // --- Paleta vívida --------------------------------------------------------
-  $primary: #facc15,            // amarillo vivo (yellow 400)
-  $secondary: #78716c,
-  $success: #22c55e,
-  $info: #0ea5e9,
-  $warning: #f97316,            // naranja: se distingue del amarillo de marca
-  $danger: #ef4444,
+  // --- Paleta ----------------------------------------------------------------
+  $primary: #0b7a85,            // verde azulado clínico
+  $secondary: #5b6b78,
+  $success: #12805c,
+  $info: #2563c9,
+  $warning: #d98e04,
+  $danger: #d03a2f,
 
-  // CoreUI define estos tonos fijos (morados, azules…), no los deriva de la paleta.
-  $primary-text-emphasis: #713f12,
-  $secondary-text-emphasis: #292524,
-  $success-text-emphasis: #14532d,
-  $info-text-emphasis: #0c4a6e,
-  $warning-text-emphasis: #7c2d12,
-  $danger-text-emphasis: #7f1d1d,
-  $primary-bg-subtle: #fef9c3,
-  $secondary-bg-subtle: #e7e5e4,
-  $success-bg-subtle: #dcfce7,
-  $info-bg-subtle: #e0f2fe,
-  $warning-bg-subtle: #ffedd5,
-  $danger-bg-subtle: #fee2e2,
-  $primary-border-subtle: #fde047,
-  $secondary-border-subtle: #d6d3d1,
-  $success-border-subtle: #86efac,
-  $info-border-subtle: #7dd3fc,
-  $warning-border-subtle: #fdba74,
-  $danger-border-subtle: #fca5a5,
+  $primary-text-emphasis: #064a52,
+  $secondary-text-emphasis: #26323b,
+  $success-text-emphasis: #0a5139,
+  $info-text-emphasis: #173d7d,
+  $warning-text-emphasis: #7d5200,
+  $danger-text-emphasis: #8a2018,
+  $primary-bg-subtle: #e3f3f4,
+  $secondary-bg-subtle: #eef1f4,
+  $success-bg-subtle: #e3f4ec,
+  $info-bg-subtle: #e6eefb,
+  $warning-bg-subtle: #fdf3dc,
+  $danger-bg-subtle: #fceae8,
+  $primary-border-subtle: #a6d8dc,
+  $secondary-border-subtle: #d3dbe2,
+  $success-border-subtle: #9fd8bf,
+  $info-border-subtle: #aac3ee,
+  $warning-border-subtle: #f2d07c,
+  $danger-border-subtle: #f0a8a1,
 
-  // Texto/checks oscuros sobre el amarillo. Los SVG de checkbox/switch necesitan un
+  // Texto/checks blancos sobre el color principal. Los SVG de checkbox/switch necesitan un
   // color literal; cada tema alternativo los regenera en _themes.scss.
-  $component-active-color: #1c1917,
-  $link-color: #a16207,
+  $component-active-color: #ffffff,
+  $link-color: #0a6b75,
 
   // Valores que dependen del tema activo: se exponen como variables CSS
   // (definidas en _app-tokens.scss y sobrescritas por tema en _themes.scss).
   $input-focus-border-color: var(--app-focus-border),
   $focus-ring-color: var(--app-focus-ring),
-  $form-switch-focus-color: #a8a29e,
+  $form-switch-focus-color: #85c8ce,
   $nav-pills-link-active-color: var(--app-on-primary),
   $dropdown-link-active-color: var(--app-on-primary),
   $pagination-active-color: var(--app-on-primary),
   $list-group-active-color: var(--app-on-primary),
 
-  // --- Neutros cálidos ------------------------------------------------------
-  $gray-base: #292524,
-  $gray-100: #f5f5f4,
-  $gray-200: #e7e5e4,
-  $gray-300: #d6d3d1,
-  $gray-400: #a8a29e,
-  $gray-500: #8a837d,
-  $gray-600: #57534e,
-  $gray-700: #44403c,
-  $gray-800: #292524,
-  $gray-900: #1c1917,
-  $black: #0c0a09,
+  // --- Neutros fríos (pizarra) --------------------------------------------------
+  $gray-base: #26323b,
+  $gray-100: #f3f6f8,
+  $gray-200: #e3e9ee,
+  $gray-300: #cfd8df,
+  $gray-400: #9eacb8,
+  $gray-500: #7d8c99,
+  $gray-600: #56656f,
+  $gray-700: #3e4b55,
+  $gray-800: #26323b,
+  $gray-900: #16212a,
+  $black: #0b1218,
 
-  $body-tertiary-bg: #f6f3ea,
-  $border-color: #e7e5e4,
-  // CoreUI deriva este valor con color-translucent(), que no admite neutros cálidos.
-  $border-color-translucent: rgba(28, 25, 23, 0.12),
+  $body-tertiary-bg: #f5f8fa,
+  $border-color: #e1e8ed,
+  $border-color-translucent: rgba(22, 33, 42, 0.12),
 
-  // --- Modo oscuro: carbón cálido, el amarillo resalta ----------------------
-  // CoreUI espera un terciario más claro que el body en oscuro; el lienzo y las
-  // tarjetas usan tokens propios (--app-canvas / --app-card-bg en _app-tokens.scss).
-  $primary-dark: #facc15,
-  $link-color-dark: #fde047,
-  $body-bg-dark: #141210,
-  $body-secondary-bg-dark: #2a2623,
-  $body-tertiary-bg-dark: #221f1c,
-  $border-color-dark: #2e2a27,
+  // --- Modo oscuro: azul noche, el verde azulado se aclara ----------------------
+  $primary-dark: #4fd1c5,
+  $link-color-dark: #7fe0d6,
+  $body-bg-dark: #0b141a,
+  $body-secondary-bg-dark: #1c2a33,
+  $body-tertiary-bg-dark: #142028,
+  $border-color-dark: #1f2e38,
   $border-color-translucent-dark: rgba(255, 255, 255, 0.08),
-  $primary-bg-subtle-dark: rgba(250, 204, 21, 0.16),
-  $secondary-bg-subtle-dark: rgba(168, 162, 158, 0.16),
-  $success-bg-subtle-dark: rgba(34, 197, 94, 0.18),
-  $info-bg-subtle-dark: rgba(14, 165, 233, 0.2),
-  $warning-bg-subtle-dark: rgba(249, 115, 22, 0.2),
-  $danger-bg-subtle-dark: rgba(239, 68, 68, 0.2),
-  $primary-text-emphasis-dark: #fde047,
-  $secondary-text-emphasis-dark: #d6d3d1,
-  $success-text-emphasis-dark: #86efac,
-  $info-text-emphasis-dark: #7dd3fc,
-  $warning-text-emphasis-dark: #fdba74,
-  $danger-text-emphasis-dark: #fca5a5,
-  $primary-border-subtle-dark: #854d0e,
-  $secondary-border-subtle-dark: #44403c,
-  $success-border-subtle-dark: #166534,
-  $info-border-subtle-dark: #075985,
-  $warning-border-subtle-dark: #9a3412,
-  $danger-border-subtle-dark: #991b1b,
+  $primary-bg-subtle-dark: rgba(79, 209, 197, 0.16),
+  $secondary-bg-subtle-dark: rgba(158, 172, 184, 0.16),
+  $success-bg-subtle-dark: rgba(52, 199, 138, 0.18),
+  $info-bg-subtle-dark: rgba(96, 148, 235, 0.2),
+  $warning-bg-subtle-dark: rgba(245, 185, 50, 0.2),
+  $danger-bg-subtle-dark: rgba(242, 102, 89, 0.2),
+  $primary-text-emphasis-dark: #b2ede7,
+  $secondary-text-emphasis-dark: #cfd8df,
+  $success-text-emphasis-dark: #9fe3c4,
+  $info-text-emphasis-dark: #b1c9f3,
+  $warning-text-emphasis-dark: #f6d58a,
+  $danger-text-emphasis-dark: #f6aaa2,
+  $primary-border-subtle-dark: #175a5c,
+  $secondary-border-subtle-dark: #3e4b55,
+  $success-border-subtle-dark: #145c43,
+  $info-border-subtle-dark: #23467f,
+  $warning-border-subtle-dark: #7a560c,
+  $danger-border-subtle-dark: #842a22,
 
   // --- Tipografía (fuentes cargadas con next/font en app/layout.tsx) ---------
   $font-family-sans-serif: (var(--font-sans), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif),
@@ -113,21 +106,21 @@
   $link-hover-decoration: underline,
 
   // --- Formas y profundidad --------------------------------------------------
-  $border-radius: 0.625rem,
-  $border-radius-sm: 0.5rem,
-  $border-radius-lg: 1rem,
-  $border-radius-xl: 1.5rem,
-  $border-radius-xxl: 2rem,
-  $box-shadow-sm: (0 1px 2px rgba(28, 25, 23, 0.05), 0 1px 3px rgba(28, 25, 23, 0.07)),
-  $box-shadow: 0 12px 32px -12px rgba(28, 25, 23, 0.28),
+  $border-radius: 0.5rem,
+  $border-radius-sm: 0.375rem,
+  $border-radius-lg: 0.75rem,
+  $border-radius-xl: 1rem,
+  $border-radius-xxl: 1.5rem,
+  $box-shadow-sm: (0 1px 2px rgba(16, 33, 42, 0.04)),
+  $box-shadow: 0 16px 40px -16px rgba(16, 33, 42, 0.3),
 
   // --- Componentes -------------------------------------------------------------
   $btn-font-weight: 600,
   $btn-padding-x: 1rem,
   $badge-font-weight: 600,
-  $badge-border-radius: 50rem,
+  $badge-border-radius: 0.375rem,
   $progress-height: 0.5rem,
-  $progress-border-radius: 50rem,
+  $progress-border-radius: 0.25rem,
 
   $card-spacer-y: 1.25rem,
   $card-spacer-x: 1.25rem,
@@ -139,13 +132,13 @@
 
   $dropdown-border-radius: var(--cui-border-radius-lg),
 
-  // Selector de periodo: la opción activa en amarillo con texto tinta.
-  $nav-enclosed-border-radius: 50rem,
+  // Pestañas encerradas: opción activa con el color principal.
+  $nav-enclosed-border-radius: var(--cui-border-radius),
   $nav-enclosed-link-active-bg: var(--cui-primary),
   $nav-enclosed-link-active-color: var(--app-on-primary),
   $nav-enclosed-link-active-border-color: var(--cui-primary),
 
-  // --- Sidebar claro con la sección activa en amarillo -----------------------
+  // --- Sidebar (azul noche en el tema Clínica, ver _themes.scss) --------------
   $sidebar-width: 16.5rem,
   $sidebar-brand-bg: transparent,
   $sidebar-nav-padding-x: 0.75rem,
@@ -154,13 +147,13 @@
   $sidebar-nav-title-padding-x: 0.875rem,
   $sidebar-nav-link-padding-y: 0.6rem,
   $sidebar-nav-link-padding-x: 0.875rem,
-  $sidebar-nav-link-hover-bg: rgba(var(--cui-primary-rgb), 0.14),
-  $sidebar-nav-link-active-bg: var(--cui-primary),
-  $sidebar-nav-link-active-color: var(--app-on-primary),
-  $sidebar-nav-link-active-icon-color: var(--app-on-primary),
+  $sidebar-nav-link-hover-bg: rgba(var(--cui-emphasis-color-rgb), 0.06),
+  $sidebar-nav-link-active-bg: rgba(var(--cui-primary-rgb), 0.16),
+  $sidebar-nav-link-active-color: var(--cui-emphasis-color),
+  $sidebar-nav-link-active-icon-color: var(--cui-primary),
 
-  // --- Header translúcido y footer integrado ---------------------------------
-  $header-bg: rgba(var(--cui-body-bg-rgb), 0.82),
+  // --- Header sólido y footer integrado ------------------------------------------
+  $header-bg: var(--app-card-bg),
   $footer-bg: transparent,
   $footer-border-width: 0
 );
@@ -173,5 +166,5 @@
 @use "settings";
 @use "admin";
 @use "profile";
-@use "integrations";
-@use "analytics";
+@use "med";
+@use "print";

@@ -1,70 +1,115 @@
-// Tokens propios de CentralApp que CoreUI no define (gráficas, acentos, panel de marca…).
-// Estos son los valores del tema base "Sol"; _themes.scss los sobrescribe por tema.
+// Tokens propios de TeleMed Rural que CoreUI no define (riesgo NEWS2, gráficas, marca…).
+// Estos son los valores del tema base "Clínica"; _themes.scss los sobrescribe por tema.
 
 :root,
 [data-coreui-theme="light"] {
-  --app-ink: #1c1917;
+  --app-ink: #16212a;
 
   // Color principal y su texto encima (CoreUI ya define --cui-primary).
-  --app-on-primary: #1c1917;
-  --app-focus-border: #eab308;
-  --app-focus-ring: rgba(234, 179, 8, 0.4);
+  --app-on-primary: #ffffff;
+  --app-focus-border: #0b7a85;
+  --app-focus-ring: rgba(11, 122, 133, 0.28);
   // Versión del color principal para superficies oscuras (sidebar oscuro).
-  --app-primary-dark: #facc15;
-  --app-primary-dark-rgb: 250, 204, 21;
-  --app-on-primary-dark: #1c1917;
+  --app-primary-dark: #4fd1c5;
+  --app-primary-dark-rgb: 79, 209, 197;
+  --app-on-primary-dark: #0b1218;
 
-  --app-accent: #f97316;
-  --app-wordmark-accent: #ea580c;
+  // Acento "pulso" (coral): latido del logo y detalles de marca.
+  --app-accent: #ff6b5b;
+  --app-wordmark-accent: #0b7a85;
 
-  // Gráficas (y el color de contraste de cada una para íconos sobre ellas).
-  --app-chart-1: #eab308;
-  --app-chart-2: #f97316;
-  --app-chart-3: #0ea5e9;
-  --app-chart-4: #ec4899;
-  --app-chart-1-on: #1c1917;
-  --app-chart-2-on: #1c1917;
-  --app-chart-3-on: #1c1917;
-  --app-chart-4-on: #1c1917;
-  --app-chart-target: #1c1917;
+  --app-chart-1: #0b7a85;
+  --app-chart-2: #2563c9;
+  --app-chart-3: #ff6b5b;
+  --app-chart-4: #7c3aed;
+  --app-chart-1-on: #ffffff;
+  --app-chart-2-on: #ffffff;
+  --app-chart-3-on: #16212a;
+  --app-chart-4-on: #ffffff;
+  --app-chart-target: #16212a;
 
-  --app-highlight: rgba(250, 204, 21, 0.6);
-  --app-canvas: #f6f3ea;
+  --app-highlight: rgba(79, 209, 197, 0.32);
+  --app-canvas: #f1f5f7;
   --app-card-bg: #fff;
 
   // Panel de marca (login/registro) y logo.
-  --app-brand-gradient: linear-gradient(140deg, #fde047 0%, #facc15 45%, #fb923c 100%);
-  --app-aside-fg: #1c1917;
-  --app-aside-muted: rgba(28, 25, 23, 0.78);
-  --app-aside-dots: rgba(28, 25, 23, 0.14);
-  --app-aside-halo: rgba(236, 72, 153, 0.35);
-  --app-aside-chip-bg: #1c1917;
-  --app-aside-chip-fg: #facc15;
-  --app-aside-wordmark: #9a3412;
-  --app-logo-from: #fde047;
-  --app-logo-to: #fb923c;
-  --app-logo-stroke: #1c1917;
-  --app-logo-dot: #1c1917;
-  --app-logo-inverted-bg: #1c1917;
-  --app-logo-inverted-stroke: #facc15;
-  --app-aside-bar: rgba(250, 204, 21, 0.35);
-  --app-aside-bar-strong: #facc15;
+  --app-brand-gradient: linear-gradient(150deg, #0e9aa7 0%, #0b6f7a 45%, #0c2b3a 100%);
+  --app-aside-fg: #fff;
+  --app-aside-muted: rgba(255, 255, 255, 0.82);
+  --app-aside-dots: rgba(255, 255, 255, 0.12);
+  --app-aside-halo: rgba(255, 107, 91, 0.35);
+  --app-aside-chip-bg: rgba(255, 255, 255, 0.14);
+  --app-aside-chip-fg: #fff;
+  --app-aside-wordmark: #9ff0e6;
+  --app-logo-from: #12a4b0;
+  --app-logo-to: #0b5f6b;
+  --app-logo-stroke: #fff;
+  --app-logo-dot: #ff8a7d;
+  --app-logo-inverted-bg: #fff;
+  --app-logo-inverted-stroke: #0b7a85;
+  --app-aside-bar: rgba(159, 240, 230, 0.4);
+  --app-aside-bar-strong: #9ff0e6;
+
+  // Gráficas: rejilla, ejes y texto atenuado.
+  --viz-grid: #e8eef2;
+  --viz-axis: #cfd8df;
+  --viz-muted: var(--cui-secondary-color);
+  --viz-zone: #eef3f6;
+
+  // Niveles de riesgo NEWS2. Iguales en todos los temas de color: su significado no cambia.
+  --tri-critico: #d92d20;
+  --tri-critico-bg: #fdecea;
+  --tri-critico-txt: #a8231a;
+  --tri-alto: #ea6a0c;
+  --tri-alto-bg: #fdf0e6;
+  --tri-alto-txt: #a54a07;
+  --tri-medio: #e0a200;
+  --tri-medio-bg: #fdf5dc;
+  --tri-medio-txt: #7d5a00;
+  --tri-bajo: #138a4e;
+  --tri-bajo-bg: #e5f5ec;
+  --tri-bajo-txt: #0d643a;
+  --tri-sin: #8796a3;
+  --tri-sin-bg: #eef2f5;
+  --tri-sin-txt: #56656f;
 }
 
 [data-coreui-theme="dark"] {
-  --app-on-primary: #1c1917;
-  --app-focus-border: #facc15;
-  --app-focus-ring: rgba(250, 204, 21, 0.35);
-  --app-accent: #fb923c;
-  --app-wordmark-accent: #facc15;
-  --app-chart-1: #facc15;
-  --app-chart-2: #fb923c;
-  --app-chart-3: #38bdf8;
-  --app-chart-4: #f472b6;
-  --app-chart-target: #fafaf9;
-  --app-highlight: rgba(250, 204, 21, 0.35);
-  --app-canvas: #141210;
-  --app-card-bg: #1d1a18;
+  --app-on-primary: #0b1218;
+  --app-focus-border: #4fd1c5;
+  --app-focus-ring: rgba(79, 209, 197, 0.3);
+  --app-accent: #ff8a7d;
+  --app-wordmark-accent: #4fd1c5;
+  --app-chart-1: #4fd1c5;
+  --app-chart-2: #6f9cf0;
+  --app-chart-3: #ff8a7d;
+  --app-chart-4: #a98bfa;
+  --app-chart-1-on: #0b1218;
+  --app-chart-2-on: #0b1218;
+  --app-chart-target: #f3f6f8;
+  --app-highlight: rgba(79, 209, 197, 0.26);
+  --app-canvas: #0b141a;
+  --app-card-bg: #101c24;
+
+  --viz-grid: #1d2b34;
+  --viz-axis: #3e4b55;
+  --viz-zone: rgba(255, 255, 255, 0.04);
+
+  --tri-critico: #f2665a;
+  --tri-critico-bg: rgba(242, 102, 90, 0.16);
+  --tri-critico-txt: #f8a59d;
+  --tri-alto: #f5944a;
+  --tri-alto-bg: rgba(245, 148, 74, 0.16);
+  --tri-alto-txt: #f9bf91;
+  --tri-medio: #f2c033;
+  --tri-medio-bg: rgba(242, 192, 51, 0.16);
+  --tri-medio-txt: #f6d88a;
+  --tri-bajo: #3ccf8a;
+  --tri-bajo-bg: rgba(60, 207, 138, 0.16);
+  --tri-bajo-txt: #93e5bd;
+  --tri-sin: #7d8c99;
+  --tri-sin-bg: rgba(125, 140, 153, 0.16);
+  --tri-sin-txt: #b3c0ca;
 }
 
 h1,

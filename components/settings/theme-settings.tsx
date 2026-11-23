@@ -38,7 +38,7 @@ export function ThemeSettings() {
           <p className="eyebrow mb-0">Configuración</p>
           <h1>Temas y apariencia</h1>
           <p className="text-body-secondary mb-0">
-            Elige cómo se ve CentralApp. Tu preferencia se guarda en este navegador.
+            Elige cómo se ve TeleMed Rural. Tu preferencia se guarda en este navegador.
           </p>
         </div>
         <CButton

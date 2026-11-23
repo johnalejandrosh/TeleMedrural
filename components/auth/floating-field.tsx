@@ -7,7 +7,8 @@ type FloatingFieldProps = {
   id: string;
   name: string;
   label: string;
-  type?: "text" | "email";
+  type?: "text" | "email" | "tel";
+  list?: string;
   autoComplete?: string;
   defaultValue?: string;
   error?: string;
@@ -16,7 +17,7 @@ type FloatingFieldProps = {
 
 /** Input con label flotante de CoreUI (`floatingLabel`) y su mensaje de validación. */
 export const FloatingField = forwardRef<HTMLInputElement, FloatingFieldProps>(function FloatingField(
-  { id, name, label, type = "text", autoComplete, defaultValue, error, className },
+  { id, name, label, type = "text", list, autoComplete, defaultValue, error, className },
   ref,
 ) {
   return (
@@ -25,6 +26,7 @@ export const FloatingField = forwardRef<HTMLInputElement, FloatingFieldProps>(fu
       id={id}
       name={name}
       type={type}
+      list={list}
       // El placeholder es obligatorio: el label flotante depende de :placeholder-shown.
       placeholder={label}
       floatingLabel={label}

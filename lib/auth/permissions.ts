@@ -2,12 +2,20 @@
  * Catálogo de permisos que usa la aplicación. Compartido entre cliente, servidor y seed.
  * Estos permisos se crean como "de sistema" (no se pueden eliminar ni cambiar su clave);
  * desde la UI se pueden crear permisos adicionales para módulos futuros.
+ *
+ * Actores: promotor de salud rural (registra casos en la app móvil), profesional de salud
+ * (revisa los casos en el panel web), coordinador y administrador.
  */
 
 export const PERMISSIONS = {
   DASHBOARD_VIEW: "dashboard.view",
-  TABLERO1_VIEW: "tablero1.view",
-  TABLERO2_VIEW: "tablero2.view",
+  CASES_READ: "cases.read",
+  CASES_READ_OWN: "cases.read_own",
+  CASES_REVIEW: "cases.review",
+  CASES_SYNC: "cases.sync",
+  PATIENTS_READ: "patients.read",
+  SYNC_READ: "sync.read",
+  SYNC_MANAGE: "sync.manage",
   USERS_READ: "users.read",
   USERS_CREATE: "users.create",
   USERS_UPDATE: "users.update",
@@ -20,19 +28,19 @@ export const PERMISSIONS = {
   PERMISSIONS_CREATE: "permissions.create",
   PERMISSIONS_UPDATE: "permissions.update",
   PERMISSIONS_DELETE: "permissions.delete",
-  INTEGRATIONS_READ: "integrations.read",
-  INTEGRATIONS_CREATE: "integrations.create",
-  INTEGRATIONS_UPDATE: "integrations.update",
-  INTEGRATIONS_DELETE: "integrations.delete",
-  INTEGRATIONS_SYNC: "integrations.sync",
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
 export const SYSTEM_PERMISSIONS: { key: PermissionKey; name: string; module: string; description: string }[] = [
-  { key: "dashboard.view", name: "Ver resumen", module: "Resumen", description: "Acceso al panel de resumen." },
-  { key: "tablero1.view", name: "Ver Tablero 1", module: "Tableros", description: "Acceso al Tablero 1 (analítica de Shopify)." },
-  { key: "tablero2.view", name: "Ver Tablero 2", module: "Tableros", description: "Acceso al Tablero 2." },
+  { key: "dashboard.view", name: "Ver inicio", module: "Inicio", description: "Panel con el resumen de casos y prioridades." },
+  { key: "cases.read", name: "Ver todos los casos", module: "Casos", description: "Consultar las fichas clínicas sincronizadas por todos los promotores." },
+  { key: "cases.read_own", name: "Ver mis casos", module: "Casos", description: "Consultar los casos registrados por uno mismo y el concepto médico." },
+  { key: "cases.review", name: "Revisar casos", module: "Casos", description: "Registrar observaciones médicas y marcar casos como revisados." },
+  { key: "cases.sync", name: "Sincronizar desde la app", module: "Casos", description: "Enviar casos desde la app móvil (API /api/v1)." },
+  { key: "patients.read", name: "Ver pacientes", module: "Pacientes", description: "Consultar pacientes y su historial de atenciones." },
+  { key: "sync.read", name: "Ver sincronización", module: "Sincronización", description: "Consultar la bitácora de lotes recibidos y los dispositivos conectados." },
+  { key: "sync.manage", name: "Gestionar dispositivos", module: "Sincronización", description: "Revocar el acceso de dispositivos móviles." },
   { key: "users.read", name: "Ver usuarios", module: "Usuarios", description: "Consultar la lista de usuarios." },
   { key: "users.create", name: "Crear usuarios", module: "Usuarios", description: "Dar de alta nuevos usuarios." },
   { key: "users.update", name: "Editar usuarios", module: "Usuarios", description: "Modificar datos, rol y estado de usuarios." },
@@ -45,34 +53,40 @@ export const SYSTEM_PERMISSIONS: { key: PermissionKey; name: string; module: str
   { key: "permissions.create", name: "Crear permisos", module: "Permisos", description: "Agregar permisos al catálogo." },
   { key: "permissions.update", name: "Editar permisos", module: "Permisos", description: "Modificar nombre, módulo y descripción de permisos." },
   { key: "permissions.delete", name: "Eliminar permisos", module: "Permisos", description: "Eliminar permisos que no son del sistema." },
-  { key: "integrations.read", name: "Ver integraciones", module: "Integraciones", description: "Consultar las conexiones con servicios externos y su guía." },
-  { key: "integrations.create", name: "Conectar integraciones", module: "Integraciones", description: "Agregar conexiones nuevas (p. ej. una tienda de Pancake POS)." },
-  { key: "integrations.update", name: "Editar integraciones", module: "Integraciones", description: "Cambiar credenciales, nombre o estado de una conexión." },
-  { key: "integrations.delete", name: "Eliminar integraciones", module: "Integraciones", description: "Quitar conexiones y sus credenciales." },
-  { key: "integrations.sync", name: "Sincronizar integraciones", module: "Integraciones", description: "Probar conexiones y consultar datos del proveedor (órdenes, CPA)." },
 ];
 
 /** Roles que crea el seed. El Administrador es de sistema y tiene acceso total. */
 export const ADMIN_ROLE_NAME = "Administrador";
-export const DEFAULT_ROLE_NAME = "Usuario";
+export const DOCTOR_ROLE_NAME = "Profesional de salud";
+export const PROMOTER_ROLE_NAME = "Promotor de salud";
+export const COORDINATOR_ROLE_NAME = "Coordinador";
+
+/** Perfiles que se pueden elegir al crear una cuenta (quedan pendientes de aprobación). */
+export const SELF_SIGNUP_ROLES = [DOCTOR_ROLE_NAME, PROMOTER_ROLE_NAME] as const;
 
 export const SEED_ROLES: { name: string; description: string; isSystem: boolean; permissions: PermissionKey[] }[] = [
   {
     name: ADMIN_ROLE_NAME,
-    description: "Acceso total a la plataforma.",
+    description: "Gestiona usuarios, roles y dispositivos. Acceso total.",
     isSystem: true,
     permissions: [],
   },
   {
-    name: "Gestor",
-    description: "Administra usuarios y consulta roles y permisos.",
+    name: DOCTOR_ROLE_NAME,
+    description: "Médico, enfermero u otro profesional: revisa los casos y registra su concepto.",
     isSystem: false,
-    permissions: ["dashboard.view", "users.read", "users.create", "users.update", "roles.read", "permissions.read"],
+    permissions: ["dashboard.view", "cases.read", "cases.review", "patients.read"],
   },
   {
-    name: DEFAULT_ROLE_NAME,
-    description: "Rol por defecto de las cuentas nuevas.",
+    name: PROMOTER_ROLE_NAME,
+    description: "Promotor de salud rural: registra casos en la app móvil y consulta el concepto médico.",
     isSystem: false,
-    permissions: ["dashboard.view"],
+    permissions: ["dashboard.view", "cases.read_own", "cases.sync"],
+  },
+  {
+    name: COORDINATOR_ROLE_NAME,
+    description: "Coordinador de la ESE o del programa: consulta casos, pacientes y la sincronización.",
+    isSystem: false,
+    permissions: ["dashboard.view", "cases.read", "patients.read", "sync.read"],
   },
 ];

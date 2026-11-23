@@ -7,7 +7,7 @@ import { CAlert, CButton, CForm, CFormSwitch, CSpinner } from "@coreui/react";
 import CIcon from "@coreui/icons-react";
 import { cilBolt } from "@coreui/icons";
 import { loginAction, type LoginState } from "@/app/(auth)/actions";
-import { DEMO_CREDENTIALS, SHOW_DEMO_LOGIN } from "@/lib/auth/demo";
+import { DEMO_ACCOUNTS, DEMO_PASSWORD, SHOW_DEMO_LOGIN } from "@/lib/auth/demo";
 import { FloatingField } from "./floating-field";
 import { PasswordField } from "./password-field";
 
@@ -19,7 +19,7 @@ function ExpiredNotice() {
   if (params.get("sesion") !== "expirada") return null;
   return (
     <CAlert color="warning" className="py-2 small">
-      Tu sesión expiró. Vuelve a iniciar sesión.
+      Su sesión expiró. Vuelva a iniciar sesión.
     </CAlert>
   );
 }
@@ -35,34 +35,42 @@ export function LoginForm() {
     return loginAction(previous, formData);
   }, initialState);
 
-  /** Rellena la cuenta demo y envía el formulario. */
-  function signInWithDemo() {
+  /** Rellena una cuenta de demostración y envía el formulario. */
+  function signInWithDemo(email: string) {
     if (!emailRef.current || !passwordRef.current) return;
-    emailRef.current.value = DEMO_CREDENTIALS.email;
-    passwordRef.current.value = DEMO_CREDENTIALS.password;
+    emailRef.current.value = email;
+    passwordRef.current.value = DEMO_PASSWORD;
     formRef.current?.requestSubmit();
   }
 
   return (
     <>
       <p className="eyebrow mb-2">Acceso</p>
-      <h1 className="h2 mb-2">Bienvenido de nuevo</h1>
-      <p className="text-body-secondary mb-4">Ingresa tus datos para entrar a tu espacio de trabajo.</p>
+      <h1 className="h2 mb-2">Bienvenido a TeleMed Rural</h1>
+      <p className="text-body-secondary mb-4">Ingrese para revisar los casos que llegan desde el campo.</p>
 
       {SHOW_DEMO_LOGIN && (
         <>
-          <CButton
-            type="button"
-            color="secondary"
-            variant="outline"
-            className="w-100 d-inline-flex align-items-center justify-content-center gap-2"
-            onClick={signInWithDemo}
-            disabled={pending}
-          >
-            <CIcon icon={cilBolt} />
-            Entrar con la cuenta demo
-          </CButton>
-          <div className="auth-divider">o con tu correo</div>
+          <div className="demo-accounts" role="group" aria-label="Entrar con una cuenta de demostración">
+            {DEMO_ACCOUNTS.map((account) => (
+              <CButton
+                key={account.email}
+                type="button"
+                color="secondary"
+                variant="outline"
+                className="demo-accounts__btn"
+                onClick={() => signInWithDemo(account.email)}
+                disabled={pending}
+              >
+                <CIcon icon={cilBolt} />
+                <span>
+                  <strong>{account.label}</strong>
+                  <small>{account.detail}</small>
+                </span>
+              </CButton>
+            ))}
+          </div>
+          <div className="auth-divider">o con su correo</div>
         </>
       )}
 
@@ -100,8 +108,8 @@ export function LoginForm() {
 
         <div className="d-flex align-items-center justify-content-between mb-4">
           <CFormSwitch id="login-remember" name="remember" label="Recordarme" defaultChecked={state.remember} />
-          <span className="small text-body-tertiary" title="Disponible cuando exista el backend">
-            ¿Olvidaste tu contraseña?
+          <span className="small text-body-tertiary" title="Pida a un administrador que le asigne una contraseña nueva">
+            ¿Olvidó su contraseña?
           </span>
         </div>
 
@@ -112,7 +120,7 @@ export function LoginForm() {
       </CForm>
 
       <p className="text-center text-body-secondary mt-4 mb-0">
-        ¿Aún no tienes cuenta? <Link href="/register" className="fw-semibold">Crea una</Link>
+        ¿Aún no tiene cuenta? <Link href="/register" className="fw-semibold">Solicite acceso</Link>
       </p>
     </>
   );

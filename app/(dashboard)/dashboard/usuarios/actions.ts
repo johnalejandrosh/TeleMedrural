@@ -10,7 +10,7 @@ import { isNotFound, isUniqueViolation } from "@/lib/server/prisma-errors";
 import { deleteUserSessions } from "@/lib/server/session";
 import { fieldErrorsOf, userSchema } from "@/lib/validation/admin";
 
-export type UserField = "name" | "email" | "roleId" | "password" | "active";
+export type UserField = "name" | "email" | "phone" | "municipality" | "roleId" | "password" | "active" | "dataConsent" | "professionalId";
 
 /** ¿Queda otro administrador activo además de `excludeId`? (evita dejar la plataforma sin administración). */
 async function hasAnotherActiveAdmin(excludeId: string) {
@@ -28,8 +28,12 @@ export async function saveUserAction(_previous: ActionResult<UserField>, formDat
   const parsed = userSchema.safeParse({
     name: formData.get("name") ?? "",
     email: formData.get("email") ?? "",
+    phone: formData.get("phone") ?? "",
+    municipality: formData.get("municipality") ?? "",
     roleId: formData.get("roleId") ?? "",
     active: formData.get("active") === "on",
+    dataConsent: formData.get("dataConsent") === "on",
+    professionalId: formData.get("professionalId") ?? "",
     password: formData.get("password") ?? "",
   });
   // Al crear, la contraseña es obligatoria: se informa junto con los demás errores.
@@ -38,6 +42,10 @@ export async function saveUserAction(_previous: ActionResult<UserField>, formDat
   if ("password" in missingPassword) return { ok: false, fieldErrors: missingPassword };
 
   const data = parsed.data;
+  // RNF-05: sin autorización del titular no se registran sus datos.
+  if (!data.dataConsent) {
+    return { ok: false, fieldErrors: { dataConsent: "Se requiere la autorización del titular para el tratamiento de sus datos (Ley 1581 de 2012)." } };
+  }
 
   const role = await db.role.findUnique({ where: { id: data.roleId }, select: { isSystem: true } });
   if (!role) return { ok: false, fieldErrors: { roleId: "El rol elegido ya no existe." } };
@@ -46,7 +54,7 @@ export async function saveUserAction(_previous: ActionResult<UserField>, formDat
     if (id) {
       const current = await db.user.findUnique({
         where: { id },
-        select: { active: true, roleId: true, role: { select: { isSystem: true } } },
+        select: { active: true, roleId: true, dataConsentAt: true, role: { select: { isSystem: true } } },
       });
       if (!current) return { ok: false, message: "El usuario ya no existe." };
 
@@ -63,8 +71,13 @@ export async function saveUserAction(_previous: ActionResult<UserField>, formDat
         data: {
           name: data.name,
           email: data.email,
+          phone: data.phone,
+          municipality: data.municipality,
           roleId: data.roleId,
           active: data.active,
+          professionalId: data.professionalId,
+          // Se conserva la fecha de la autorización original.
+          dataConsentAt: current.dataConsentAt ?? new Date(),
           ...(data.password && { passwordHash: await hashPassword(data.password) }),
         },
       });
@@ -79,8 +92,12 @@ export async function saveUserAction(_previous: ActionResult<UserField>, formDat
       data: {
         name: data.name,
         email: data.email,
+        phone: data.phone,
+        municipality: data.municipality,
         roleId: data.roleId,
         active: data.active,
+        professionalId: data.professionalId,
+        dataConsentAt: new Date(),
         passwordHash: await hashPassword(data.password),
       },
     });
@@ -98,8 +115,15 @@ export async function toggleUserActiveAction(id: string): Promise<ActionResult> 
   if (!auth.ok) return { ok: false, message: auth.message };
   if (id === auth.user.id) return { ok: false, message: "No puedes desactivar tu propia cuenta." };
 
-  const user = await db.user.findUnique({ where: { id }, select: { name: true, active: true, role: { select: { isSystem: true } } } });
+  const user = await db.user.findUnique({
+    where: { id },
+    select: { name: true, active: true, role: { select: { isSystem: true } }, _count: { select: { casesCaptured: true, notes: true } } },
+  });
   if (!user) return { ok: false, message: "El usuario ya no existe." };
+  // Los casos y las observaciones son parte de la historia clínica: no se borran con el usuario.
+  if (user._count.casesCaptured > 0 || user._count.notes > 0) {
+    return { ok: false, message: `${user.name} tiene casos u observaciones clínicas registradas. Desactive la cuenta en lugar de eliminarla.` };
+  }
   if (user.active && user.role.isSystem && !(await hasAnotherActiveAdmin(id))) return { ok: false, message: LAST_ADMIN_MESSAGE };
 
   await db.user.update({ where: { id }, data: { active: !user.active } });
@@ -114,11 +138,18 @@ export async function deleteUserAction(id: string): Promise<ActionResult> {
   if (!auth.ok) return { ok: false, message: auth.message };
   if (id === auth.user.id) return { ok: false, message: "No puedes eliminar tu propia cuenta." };
 
-  const user = await db.user.findUnique({ where: { id }, select: { name: true, active: true, role: { select: { isSystem: true } } } });
+  const user = await db.user.findUnique({
+    where: { id },
+    select: { name: true, active: true, role: { select: { isSystem: true } }, _count: { select: { casesCaptured: true, notes: true } } },
+  });
   if (!user) return { ok: false, message: "El usuario ya no existe." };
+  // Los casos y las observaciones son parte de la historia clínica: no se borran con el usuario.
+  if (user._count.casesCaptured > 0 || user._count.notes > 0) {
+    return { ok: false, message: `${user.name} tiene casos u observaciones clínicas registradas. Desactive la cuenta en lugar de eliminarla.` };
+  }
   if (user.active && user.role.isSystem && !(await hasAnotherActiveAdmin(id))) return { ok: false, message: LAST_ADMIN_MESSAGE };
 
-  // Sus sesiones se eliminan en cascada.
+  // Sus sesiones y tokens de la app se eliminan en cascada.
   await db.user.delete({ where: { id } });
   refresh();
   return { ok: true, message: `Se eliminó a ${user.name}.` };

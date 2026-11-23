@@ -16,7 +16,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <ThemeSwitcher className="ms-auto" />
         </div>
         <div className="auth-form-wrap">{children}</div>
-        <p className="small text-body-tertiary text-center mb-0">CentralApp · Entorno de desarrollo, sin backend</p>
+        <p className="small text-body-tertiary text-center mb-0">TeleMed Rural · Telemedicina diferida para zonas sin conectividad</p>
       </main>
     </div>
   );

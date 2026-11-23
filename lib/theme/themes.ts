@@ -20,19 +20,19 @@ export type AppTheme = {
 
 export const APP_THEMES: AppTheme[] = [
   {
-    id: "sol",
-    name: "Sol",
-    description: "Amarillo vivo y tinta. Enérgico, claro y directo.",
-    sidebar: "light",
+    id: "clinica",
+    name: "Clínica",
+    description: "Verde azulado clínico con menú azul noche. El tema de TeleMed Rural.",
+    sidebar: "dark",
     swatches: {
-      primary: "#facc15",
-      onPrimary: "#1c1917",
-      canvas: "#f6f3ea",
-      sidebar: "#ffffff",
-      sidebarFg: "#1c1917",
-      sidebarPrimary: "#facc15",
-      sidebarOnPrimary: "#1c1917",
-      charts: ["#eab308", "#f97316", "#0ea5e9", "#ec4899"],
+      primary: "#0b7a85",
+      onPrimary: "#ffffff",
+      canvas: "#f1f5f7",
+      sidebar: "#0c2531",
+      sidebarFg: "#ffffff",
+      sidebarPrimary: "#4fd1c5",
+      sidebarOnPrimary: "#0b1218",
+      charts: ["#0b7a85", "#2563c9", "#ff6b5b", "#7c3aed"],
     },
   },
   {
@@ -48,7 +48,7 @@ export const APP_THEMES: AppTheme[] = [
       sidebarFg: "#0f172a",
       sidebarPrimary: "#0369a1",
       sidebarOnPrimary: "#ffffff",
-      charts: ["#0369a1", "#06b6d4", "#f59e0b", "#8b5cf6"],
+      charts: ["#0369a1", "#06b6d4", "#f59e0b", "#7c3aed"],
     },
   },
   {
@@ -80,7 +80,7 @@ export const APP_THEMES: AppTheme[] = [
       sidebarFg: "#1c1917",
       sidebarPrimary: "#e11d48",
       sidebarOnPrimary: "#ffffff",
-      charts: ["#e11d48", "#fb923c", "#8b5cf6", "#0ea5e9"],
+      charts: ["#e11d48", "#fb923c", "#7c3aed", "#0ea5e9"],
     },
   },
   {

@@ -18,6 +18,7 @@ import {
 } from "@coreui/react";
 import { saveUserAction, type UserField } from "@/app/(dashboard)/dashboard/usuarios/actions";
 import type { ActionResult } from "@/lib/actions";
+import { MUNICIPIOS } from "@/lib/med/catalog";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/validation";
 import type { RoleOption, UserRow } from "@/lib/server/admin-queries";
 
@@ -86,6 +87,35 @@ export function UserForm({ user, roles, isSelf, onSaved, onCancel }: UserFormPro
             />
           </CCol>
           <CCol md={6}>
+            <CFormInput
+              id="user-phone"
+              name="phone"
+              type="tel"
+              label="Teléfono"
+              defaultValue={user?.phone ?? ""}
+              autoComplete="off"
+              invalid={Boolean(errors.phone)}
+              feedbackInvalid={errors.phone}
+            />
+          </CCol>
+          <CCol md={6}>
+            <CFormInput
+              id="user-municipality"
+              name="municipality"
+              label="Municipio o sede"
+              list="user-municipios"
+              defaultValue={user?.municipality ?? ""}
+              autoComplete="off"
+              invalid={Boolean(errors.municipality)}
+              feedbackInvalid={errors.municipality}
+            />
+            <datalist id="user-municipios">
+              {MUNICIPIOS.map((m) => (
+                <option key={m} value={m} />
+              ))}
+            </datalist>
+          </CCol>
+          <CCol md={6}>
             <CFormSelect
               id="user-role"
               name="roleId"
@@ -104,6 +134,18 @@ export function UserForm({ user, roles, isSelf, onSaved, onCancel }: UserFormPro
             </CFormSelect>
             {/* Un select deshabilitado no se envía: se manda el valor actual. */}
             {isSelf && user && <input type="hidden" name="roleId" value={user.role.id} />}
+          </CCol>
+          <CCol md={6}>
+            <CFormInput
+              id="user-professional-id"
+              name="professionalId"
+              label="Registro profesional (ReTHUS)"
+              defaultValue={user?.professionalId ?? ""}
+              autoComplete="off"
+              text="Solo para el personal de salud que revisa casos."
+              invalid={Boolean(errors.professionalId)}
+              feedbackInvalid={errors.professionalId}
+            />
           </CCol>
           <CCol md={6}>
             <CFormInput
@@ -128,6 +170,16 @@ export function UserForm({ user, roles, isSelf, onSaved, onCancel }: UserFormPro
             />
             {errors.active && <div className="invalid-feedback d-block">{errors.active}</div>}
             {isSelf && <input type="hidden" name="active" value="on" />}
+          </CCol>
+          <CCol xs={12}>
+            <CFormSwitch
+              id="user-consent"
+              name="dataConsent"
+              label="El titular autorizó el tratamiento de sus datos personales (Ley 1581 de 2012)"
+              defaultChecked={Boolean(user?.dataConsentAt)}
+              invalid={Boolean(errors.dataConsent)}
+            />
+            {errors.dataConsent && <div className="invalid-feedback d-block">{errors.dataConsent}</div>}
           </CCol>
         </CRow>
       </CModalBody>

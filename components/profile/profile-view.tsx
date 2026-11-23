@@ -84,7 +84,7 @@ export function ProfileView({ profile }: { profile: Profile }) {
           <CCardBody>
             <SectionHead
               title="Información de la cuenta"
-              hint="Los datos con los que te identificas en CentralApp."
+              hint="Los datos con los que te identificas en TeleMed Rural."
               action={
                 canEditUsers && (
                   <CButton

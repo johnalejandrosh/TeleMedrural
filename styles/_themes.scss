@@ -1,7 +1,7 @@
 // =============================================================================
-// Temas de color de CentralApp
+// Temas de color de TeleMed Rural
 //
-// El CSS de CoreUI se compila una sola vez con el tema base "Sol" (theme.scss).
+// El CSS de CoreUI se compila una sola vez con el tema base "Clínica" (theme.scss).
 // Cada tema alternativo se activa con <html data-app-theme="…"> y aquí se generan
 // solo las piezas que dependen del color: variables de CoreUI (claro y oscuro),
 // botones (con los mixins de CoreUI), los SVG de checkbox/switch y los tokens
@@ -17,12 +17,31 @@
 @use "@coreui/coreui/scss/mixins" as *;
 
 $app-themes: (
+  // Tema base: se repite aquí para generar su menú lateral azul noche.
+  "clinica": (
+    primary: #0b7a85,
+    primary-dark: #4fd1c5,
+    accent: #ff6b5b,
+    accent-dark: #ff8a7d,
+    link: #0a6b75,
+    link-dark: #7fe0d6,
+    charts: (#0b7a85, #2563c9, #ff6b5b, #7c3aed),
+    charts-dark: (#4fd1c5, #6f9cf0, #ff8a7d, #a98bfa),
+    target: #16212a,
+    target-dark: #f3f6f8,
+    gradient: linear-gradient(150deg, #0e9aa7 0%, #0b6f7a 45%, #0c2b3a 100%),
+    halo: rgba(255, 107, 91, 0.35),
+    logo: (#12a4b0, #0b5f6b),
+    light: (canvas: #f1f5f7, tertiary: #f5f8fa, border: #e1e8ed),
+    dark: (body: #0b141a, secondary: #1c2a33, tertiary: #142028, border: #1f2e38, card: #101c24),
+    sidebar: (bg: #0c2531, secondary: #143241, tertiary: #102c3a, border: #173848),
+  ),
   "oceano": (
     primary: #0369a1,
     primary-dark: #38bdf8,
     accent: #06b6d4,
     accent-dark: #22d3ee,
-    charts: (#0369a1, #06b6d4, #f59e0b, #8b5cf6),
+    charts: (#0369a1, #06b6d4, #f59e0b, #7c3aed),
     charts-dark: (#38bdf8, #22d3ee, #fbbf24, #a78bfa),
     target: #0f172a,
     target-dark: #f8fafc,
@@ -53,7 +72,7 @@ $app-themes: (
     primary-dark: #fb7185,
     accent: #fb923c,
     accent-dark: #fdba74,
-    charts: (#e11d48, #fb923c, #8b5cf6, #0ea5e9),
+    charts: (#e11d48, #fb923c, #7c3aed, #0ea5e9),
     charts-dark: (#fb7185, #fdba74, #a78bfa, #38bdf8),
     target: #1c1917,
     target-dark: #fafaf9,

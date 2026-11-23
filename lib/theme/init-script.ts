@@ -4,17 +4,17 @@
  */
 
 /** Clave de localStorage con la preferencia de modo (claro / oscuro / sistema). */
-export const COLOR_MODE_STORAGE_KEY = "centralapp.color-mode";
+export const COLOR_MODE_STORAGE_KEY = "telemed.color-mode";
 
 /** Clave de localStorage con el tema de color elegido. */
-export const APP_THEME_STORAGE_KEY = "centralapp.app-theme";
+export const APP_THEME_STORAGE_KEY = "telemed.app-theme";
 
 /** Ids de los temas; deben coincidir con styles/_themes.scss y lib/theme/themes.ts. */
-export const APP_THEME_IDS = ["sol", "oceano", "esmeralda", "coral", "lavanda", "grafito"] as const;
+export const APP_THEME_IDS = ["clinica", "oceano", "esmeralda", "coral", "lavanda", "grafito"] as const;
 
 export type AppThemeId = (typeof APP_THEME_IDS)[number];
 
-export const DEFAULT_APP_THEME: AppThemeId = "sol";
+export const DEFAULT_APP_THEME: AppThemeId = "clinica";
 
 export function isAppThemeId(value: unknown): value is AppThemeId {
   return typeof value === "string" && (APP_THEME_IDS as readonly string[]).includes(value);

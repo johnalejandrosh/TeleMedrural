@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { SessionProvider, type ClientUser } from "@/components/providers/session-provider";
 import { requireUser } from "@/lib/server/dal";
+import { countPending } from "@/lib/server/case-queries";
 
 /**
  * Con Cache Components, leer la sesión (cookies) debe ocurrir dentro de <Suspense>.
@@ -19,6 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 async function AuthenticatedShell({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
+  const { pending, urgent } = await countPending(user);
   const clientUser: ClientUser = {
     id: user.id,
     name: user.name,
@@ -26,6 +28,8 @@ async function AuthenticatedShell({ children }: { children: React.ReactNode }) {
     roleName: user.roleName,
     isSuperAdmin: user.isSuperAdmin,
     permissions: user.permissions,
+    pendingCases: pending,
+    urgentCases: urgent,
   };
 
   return (

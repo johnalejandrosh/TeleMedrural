@@ -3,7 +3,7 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { APP_THEME_STORAGE_KEY, DEFAULT_APP_THEME, isAppThemeId, type AppThemeId } from "./init-script";
 
-const CHANGE_EVENT = "centralapp:app-theme";
+const CHANGE_EVENT = "telemed:app-theme";
 
 function readStoredTheme(): AppThemeId {
   try {
